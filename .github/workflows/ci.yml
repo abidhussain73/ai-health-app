@@ -7,9 +7,6 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,15 +14,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm run type-check
-      - run: npm run test
+      - run: npm run lint --workspace=@ai-health/api
+      - run: npm run type-check --workspace=@ai-health/api
+      - run: npm run test --workspace=@ai-health/api
 
   web:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,15 +27,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm run type-check
-      - run: npm run build
+      - run: npm run lint --workspace=@ai-health/web
+      - run: npm run type-check --workspace=@ai-health/web
+      - run: npm run build --workspace=@ai-health/web
 
   mobile:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,5 +40,5 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run lint
-      - run: npm run type-check
+      - run: npm run lint --workspace=@ai-health/mobile
+      - run: npm run type-check --workspace=@ai-health/mobile

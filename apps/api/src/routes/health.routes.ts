@@ -4,7 +4,7 @@ import { redis } from '../config/redis';
 
 const router = Router();
 
-router.get('/health', async (_req, res) => {
+router.get('/', async (_req, res) => {
   const dbState = mongoose.connection.readyState;
   const redisAlive = redis.isOpen ? (await redis.ping()) === 'PONG' : false;
 

@@ -1,10 +1,9 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
     "strict": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler",
+    "types": ["react", "react-native"],
+    "skipLibCheck": true,
     "noEmit": true
   },
   "include": ["**/*.ts", "**/*.tsx"]
