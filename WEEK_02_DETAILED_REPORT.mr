@@ -1,0 +1,130 @@
+# Week 2 Detailed Report
+
+## Phase
+Phase 1 - Foundation
+
+## Week
+Week 2 of 6
+
+## Theme
+Authentication Backend Completion
+
+## Goal
+Deliver a complete backend authentication system that is production-oriented and ready for Week 3 frontend integration.
+
+## Completed Implementation
+
+### 1. Auth Domain and Routing
+- Added dedicated auth route module with API endpoints under /api/v1/auth.
+- Added auth route registration in the API router.
+- Added auth-specific rate limiter for abuse prevention.
+
+Implemented endpoints:
+- POST /api/v1/auth/register
+- POST /api/v1/auth/verify-email
+- POST /api/v1/auth/login
+- POST /api/v1/auth/refresh
+- POST /api/v1/auth/logout
+- POST /api/v1/auth/forgot-password
+- POST /api/v1/auth/reset-password
+- GET /api/v1/auth/me
+
+### 2. User and Profile Data Models
+- Upgraded User model with Week 2 auth fields:
+  - emailVerified
+  - status lifecycle (unverified, active, suspended, deleted)
+  - role and plan
+  - oauthProviders
+  - refreshTokenFamilies
+  - failedLoginAttempts and lockUntil
+  - lastLoginAt and expoPushToken
+- Expanded HealthProfile model with baseline targets and emergency contacts.
+
+### 3. Security and Validation
+- Added request validation schemas (Zod) for register, verify-email, login, forgot-password, reset-password.
+- Added JWT access/refresh helpers and verification utilities.
+- Added cookie parsing middleware for refresh-token cookie handling.
+- Added structured API response helpers for success/error consistency.
+- Improved error middleware for validation and custom HTTP handling.
+
+### 4. Register and Email Verification Flow
+- Register validates payload and prevents duplicate email.
+- Password hashing uses bcrypt (12 rounds).
+- User created in unverified state.
+- Health profile stub created on registration.
+- OTP generated and hashed, stored in Redis with 10-minute TTL.
+- Verify-email compares OTP hash, activates account, issues token pair, and sets HTTP-only refresh cookie.
+
+### 5. Login, Refresh Rotation, and Logout
+- Login validates credentials and account status.
+- Access token returned in JSON response.
+- Refresh token stored as secure HTTP-only cookie.
+- Refresh flow validates family record in Redis and rotates token safely.
+- Reuse/invalid conditions return unauthorized and clear session path.
+- Logout clears refresh cookie and removes refresh family from Redis and user state.
+
+### 6. Forgot and Reset Password
+- Forgot-password always returns generic success message for security.
+- Reset token generated securely and persisted in Redis with 1-hour TTL.
+- Reset-password validates token, re-hashes password, clears lock/failure state, and invalidates refresh token families.
+
+### 7. Lockout and Rate Protection
+- Added lockout behavior using Redis:
+  - failed attempt counter per email
+  - lock after 10 failed login attempts
+  - lock duration: 30 minutes
+- Added auth route rate limiting:
+  - 20 requests per 15 minutes per IP
+
+### 8. Email Service Layer
+- Added email service with nodemailer support.
+- Added safe fallback logging behavior when SMTP is not configured.
+- Added OTP and password-reset email templates.
+
+## Live Verification Performed
+
+### Compile and Quality
+- API lint: pass
+- API type-check: pass
+- API build: pass
+- Monorepo test command: pass
+
+### Runtime and Endpoint Smoke Flow
+Verified against live MongoDB and Redis containers:
+- register -> success
+- verify-email -> success
+- login -> success
+- refresh -> success
+- logout -> success
+
+Additional checks verified:
+- login lockout occurs on 10 failed attempts
+- forgot-password returns safe generic success response
+- reset-password succeeds with valid reset token
+
+## Files Added
+- apps/api/src/config/jwt.ts
+- apps/api/src/controllers/auth.controller.ts
+- apps/api/src/middleware/auth.middleware.ts
+- apps/api/src/routes/auth.routes.ts
+- apps/api/src/services/email.service.ts
+- apps/api/src/utils/errors.ts
+- apps/api/src/utils/response.ts
+- apps/api/src/validators/auth.validator.ts
+
+## Files Updated
+- apps/api/package.json
+- apps/api/src/app.ts
+- apps/api/src/config/env.ts
+- apps/api/src/middleware/error.middleware.ts
+- apps/api/src/models/User.model.ts
+- apps/api/src/models/HealthProfile.model.ts
+- apps/api/src/routes/index.ts
+- package-lock.json
+
+## Week 2 Completion Statement
+Week 2 authentication backend scope is completed and functionally validated for Week 3 frontend integration.
+
+## Notes
+- SMTP credentials can be added later to send real OTP/reset emails from production mail providers.
+- Current CI test scripts are placeholders in some workspace packages and can be expanded in later weeks with dedicated unit/integration suites.
