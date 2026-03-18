@@ -1,17 +1,28 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '../../../lib/api';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-export default function LoginPage() {
+export default function VerifyEmailPage() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const queryEmail = new URLSearchParams(window.location.search).get('email');
+    if (queryEmail) {
+      setEmail(queryEmail);
+    }
+  }, []);
 
   const onSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -19,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/verify-email', { email, otp });
       const accessToken = res.data?.data?.accessToken as string | undefined;
       const user = res.data?.data?.user;
 
@@ -30,9 +41,9 @@ export default function LoginPage() {
       localStorage.setItem('accessToken', accessToken);
       document.cookie = `accessToken=${accessToken}; path=/`;
       setUser(user);
-      router.replace('/dashboard');
+      router.replace('/setup-profile');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Verification failed');
     } finally {
       setLoading(false);
     }
@@ -41,11 +52,11 @@ export default function LoginPage() {
   return (
     <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
       <form onSubmit={onSubmit} style={{ width: 360, display: 'grid', gap: 8 }}>
-        <h1>Web Login</h1>
+        <h1>Verify Email</h1>
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Email' />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Password' type='password' />
+        <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder='6-digit OTP' />
         {error ? <p style={{ color: 'crimson' }}>{error}</p> : null}
-        <button type='submit' disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
+        <button type='submit' disabled={loading}>{loading ? 'Verifying...' : 'Verify'}</button>
       </form>
     </main>
   );
