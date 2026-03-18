@@ -42,3 +42,22 @@ jobs:
       - run: npm ci
       - run: npm run lint --workspace=@ai-health/mobile
       - run: npm run type-check --workspace=@ai-health/mobile
+
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    needs: [backend, web, mobile]
+    if: ${{ always() }}
+    steps:
+      - name: Verify upstream jobs
+        run: |
+          echo "backend=${{ needs.backend.result }}"
+          echo "web=${{ needs.web.result }}"
+          echo "mobile=${{ needs.mobile.result }}"
+
+          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.web.result }}" != "success" ] || [ "${{ needs.mobile.result }}" != "success" ]; then
+            echo "One or more CI jobs failed."
+            exit 1
+          fi
+
+          echo "All CI jobs passed."
