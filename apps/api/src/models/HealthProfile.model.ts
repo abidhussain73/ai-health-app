@@ -10,6 +10,13 @@ const HealthProfileSchema = new mongoose.Schema(
     glucoseTargetMax: { type: Number, default: 130 },
     bloodPressureTargetSystolic: { type: Number, default: 120 },
     bloodPressureTargetDiastolic: { type: Number, default: 80 },
+    demographic: {
+      age: { type: Number },
+      gender: { type: String },
+      heightCm: { type: Number },
+      weightKg: { type: Number },
+      activityLevel: { type: String }
+    },
     emergencyContacts: [
       {
         name: { type: String },
